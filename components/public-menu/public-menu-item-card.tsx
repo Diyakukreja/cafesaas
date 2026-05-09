@@ -1,95 +1,83 @@
 'use client'
 
 import { MenuItem } from '@/types'
-import { Clock, Image as ImageIcon } from 'lucide-react'
+import { Clock, Star, Leaf, Utensils } from 'lucide-react'
+import { motion } from 'framer-motion'
 
-import { HoverCard } from '@/components/ui/motion'
+interface PublicMenuItemCardProps {
+  item: MenuItem
+  onClick: () => void
+}
 
-export function PublicMenuItemCard({ item }: { item: MenuItem }) {
+export function PublicMenuItemCard({ item, onClick }: PublicMenuItemCardProps) {
   const isSoldOut = !item.is_available
 
   return (
-    <HoverCard 
-      className={`group flex bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md rounded-[24px] overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-zinc-200/60 dark:border-zinc-800/60 transition-colors duration-300 ${
-        isSoldOut ? 'opacity-60 grayscale-[0.3]' : 'hover:bg-white dark:hover:bg-zinc-900 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]'
+    <div
+      onClick={!isSoldOut ? onClick : undefined}
+      // NUCLEAR DEBUG: Solid background, red border, high z-index, no overflow hidden
+      className={`group relative flex bg-white dark:bg-zinc-900 rounded-[28px] shadow-2xl border-4 border-red-500 transition-all duration-300 cursor-pointer z-[150] ${
+        isSoldOut ? 'opacity-60 grayscale-[0.5] cursor-not-allowed' : 'hover:shadow-xl'
       }`}
     >
-      {/* Food-First Image Section */}
-      <div className="w-[120px] sm:w-[160px] flex-shrink-0 bg-zinc-50 dark:bg-zinc-950 flex items-center justify-center relative overflow-hidden">
+      {/* Featured Ribbon */}
+      {item.is_featured && !isSoldOut && (
+        <div className="absolute top-0 right-0 z-[160] px-3 py-1 bg-amber-500 text-white text-[10px] font-black uppercase tracking-widest rounded-bl-xl shadow-sm flex items-center gap-1">
+          <Star className="w-3 h-3 fill-white" />
+          Featured
+        </div>
+      )}
+
+      {/* Image Section */}
+      <div className="w-[110px] sm:w-[160px] flex-shrink-0 bg-zinc-100 dark:bg-zinc-950 relative">
         {item.image_url ? (
           <img 
             src={item.image_url} 
             alt={item.name} 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-            loading="lazy"
-            onError={(e) => {
-              // Graceful fallback for broken image links
-              e.currentTarget.style.display = 'none';
-              e.currentTarget.parentElement!.innerHTML = `<div class="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-800"><svg class="w-8 h-8 text-zinc-300 dark:text-zinc-600" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></div>`;
-            }}
+            className="w-full h-full object-cover" 
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center bg-zinc-100 dark:bg-zinc-800/50">
-            <ImageIcon className="w-8 h-8 text-zinc-300 dark:text-zinc-600/50" strokeWidth={1.5} />
-          </div>
-        )}
-        
-        {/* Soft Glassmorphism Sold Out overlay */}
-        {isSoldOut && (
-          <div className="absolute inset-0 bg-zinc-900/40 backdrop-blur-sm flex items-center justify-center z-10">
-            <span className="bg-white/95 text-zinc-900 text-[11px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full shadow-[0_4px_12px_rgb(0,0,0,0.15)]">
-              Sold Out
-            </span>
+          <div className="w-full h-full flex items-center justify-center bg-zinc-50 dark:bg-zinc-800">
+            <Utensils className="w-8 h-8 text-zinc-200 dark:text-zinc-700" />
           </div>
         )}
       </div>
 
       {/* Content Section */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between relative">
-        <div className="mb-4">
-          <div className="flex items-start justify-between gap-3 mb-1.5">
-            <h3 className="font-bold text-zinc-900 dark:text-zinc-50 text-[17px] sm:text-[19px] leading-tight line-clamp-2 tracking-tight">
+      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between relative z-[155]">
+        <div>
+          <div className="flex items-start justify-between gap-2 mb-1">
+            <h3 className="font-black text-zinc-900 dark:text-zinc-50 text-base sm:text-lg leading-tight tracking-tight line-clamp-2">
               {item.name}
             </h3>
-            <span className="font-bold text-zinc-900 dark:text-white text-base sm:text-lg whitespace-nowrap">
+            <span className="font-black text-zinc-900 dark:text-white text-sm sm:text-base" style={{ color: !isSoldOut ? 'var(--theme-color)' : undefined }}>
               ${Number(item.price).toFixed(2)}
             </span>
           </div>
           
           {item.description && (
-            <p className="text-[14px] sm:text-[15px] text-zinc-500 dark:text-zinc-400 leading-relaxed line-clamp-2 sm:line-clamp-3">
+            <p className="text-[13px] sm:text-[14px] text-zinc-500 dark:text-zinc-400 leading-snug line-clamp-2 font-medium opacity-100 mt-0.5">
               {item.description}
             </p>
           )}
         </div>
 
-        {/* Badges */}
-        <div className="flex items-center gap-2 flex-wrap mt-auto">
+        {/* Dynamic Badges */}
+        <div className="flex items-center gap-2 mt-3">
           {item.is_veg && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] sm:text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50">
-              🌱 Veg
-            </span>
-          )}
-          {item.is_featured && (
-            <span 
-              className="inline-flex items-center px-2 py-0.5 rounded-md text-[11px] sm:text-xs font-semibold border"
-              style={{ 
-                backgroundColor: 'color-mix(in srgb, var(--theme-color) 8%, transparent)',
-                color: 'color-mix(in srgb, var(--theme-color) 80%, black)', // Ensure readable contrast
-                borderColor: 'color-mix(in srgb, var(--theme-color) 20%, transparent)'
-              }}
-            >
-              ⭐ Featured
+            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9px] sm:text-[10px] font-black uppercase bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 border border-emerald-100 dark:border-emerald-800/50">
+              <Leaf className="w-2.5 h-2.5" />
+              Veg
             </span>
           )}
           {item.preparation_time && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] sm:text-xs text-zinc-400 dark:text-zinc-500 font-medium ml-auto tracking-wide">
-              <Clock className="w-3.5 h-3.5" />
+            <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-[11px] text-zinc-400 dark:text-zinc-500 font-bold ml-auto uppercase tracking-wider">
+              <Clock className="w-3 h-3" />
               {item.preparation_time} min
             </span>
           )}
         </div>
       </div>
-    </HoverCard>
+    </div>
   )
 }

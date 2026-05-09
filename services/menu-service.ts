@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { SupabaseClient } from '@supabase/supabase-js'
 import { MenuItem } from '@/types'
 import { Database } from '@/types/database.types'
 
@@ -6,10 +7,13 @@ type MenuItemInsert = Database['public']['Tables']['menu_items']['Insert']
 type MenuItemUpdate = Database['public']['Tables']['menu_items']['Update']
 
 class MenuService {
-  private supabase = createClient()
+  private getClient(client?: SupabaseClient) {
+    return client || createClient()
+  }
 
-  async getMenuItems(cafeId: string, categoryId?: string) {
-    let query = this.supabase
+  async getMenuItems(cafeId: string, categoryId?: string, client?: SupabaseClient) {
+    const supabase = this.getClient(client)
+    let query = supabase
       .from('menu_items')
       .select('*')
       .eq('cafe_id', cafeId)
@@ -25,8 +29,9 @@ class MenuService {
     return data as MenuItem[]
   }
 
-  async createMenuItem(item: MenuItemInsert) {
-    const { data, error } = await this.supabase
+  async createMenuItem(item: MenuItemInsert, client?: SupabaseClient) {
+    const supabase = this.getClient(client)
+    const { data, error } = await supabase
       .from('menu_items')
       .insert(item)
       .select()
@@ -36,8 +41,9 @@ class MenuService {
     return data as MenuItem
   }
 
-  async updateMenuItem(id: string, updates: MenuItemUpdate) {
-    const { data, error } = await this.supabase
+  async updateMenuItem(id: string, updates: MenuItemUpdate, client?: SupabaseClient) {
+    const supabase = this.getClient(client)
+    const { data, error } = await supabase
       .from('menu_items')
       .update(updates)
       .eq('id', id)
@@ -48,8 +54,9 @@ class MenuService {
     return data as MenuItem
   }
 
-  async deleteMenuItem(id: string) {
-    const { error } = await this.supabase
+  async deleteMenuItem(id: string, client?: SupabaseClient) {
+    const supabase = this.getClient(client)
+    const { error } = await supabase
       .from('menu_items')
       .delete()
       .eq('id', id)

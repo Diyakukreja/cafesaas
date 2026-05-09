@@ -1,55 +1,126 @@
-export default async function CafePage({
+import { createClient } from '@/lib/supabase/server'
+import { cafeService } from '@/services/cafe-service'
+import { categoryService } from '@/services/category-service'
+import { menuService } from '@/services/menu-service'
+import { notFound } from 'next/navigation'
+import { Metadata } from 'next'
+
+import { PublicHeader } from '@/components/public-menu/public-header'
+import { PublicCategoryNav } from '@/components/public-menu/public-category-nav'
+import { PublicMenuItemCard } from '@/components/public-menu/public-menu-item-card'
+import { Coffee } from 'lucide-react'
+
+// Generate Dynamic Metadata for SEO
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const { slug } = await params
+  const supabase = await createClient()
+  const cafe = await cafeService.getCafeBySlug(slug, supabase).catch(() => null)
+
+  if (!cafe || !cafe.is_active) {
+    return { title: 'Cafe Not Found' }
+  }
+
+  return {
+    title: `${cafe.name} | Menu`,
+    description: cafe.description || `View the delicious menu for ${cafe.name}.`,
+    openGraph: {
+      title: `${cafe.name} | Menu`,
+      description: cafe.description || `View the delicious menu for ${cafe.name}.`,
+      images: cafe.logo_url ? [cafe.logo_url] : [],
+    },
+  }
+}
+
+export default async function PublicCafePage({
   params,
 }: {
   params: Promise<{ slug: string }>
 }) {
   const { slug } = await params
-  
-  // In a real app, fetch tenant details from the DB here
-  // const tenant = await tenantService.getTenantBySlug(slug)
-  // if (!tenant) notFound()
+  const supabase = await createClient()
+
+  // 1. Fetch Cafe Data
+  const cafe = await cafeService.getCafeBySlug(slug, supabase).catch(() => null)
+
+  // Escape hatch if cafe missing or inactive
+  if (!cafe || !cafe.is_active) {
+    notFound()
+  }
+
+  // 2. Fetch Categories & Menu Items in parallel
+  const [allCategories, allItems] = await Promise.all([
+    categoryService.getCategories(cafe.id, supabase).catch(() => []),
+    menuService.getMenuItems(cafe.id, undefined, supabase).catch(() => []),
+  ])
+
+  // Filter down to active categories only
+  const activeCategories = allCategories.filter((cat) => cat.is_active)
+
+  // Group items locally. Only include items belonging to active categories.
+  const categoriesWithItems = activeCategories.map((cat) => {
+    return {
+      ...cat,
+      items: allItems.filter((item) => item.category_id === cat.id),
+    }
+  }).filter(cat => cat.items.length > 0) // Hide empty categories
+
+  // Setup Theme Colors
+  const themeColor = cafe.theme_color || '#4f46e5' // Default indigo-600
 
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Cafe Header / Banner */}
-      <header className="h-48 bg-indigo-600 relative flex items-end p-6">
-        <h1 className="text-3xl font-bold text-white relative z-10 capitalize">
-          {slug.replace('-', ' ')}
-        </h1>
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-      </header>
-      
-      {/* Menu Categories */}
-      <div className="sticky top-0 bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 z-20 overflow-x-auto whitespace-nowrap p-4 scrollbar-hide">
-        <div className="flex gap-4">
-          {['Coffee', 'Tea', 'Pastries', 'Sandwiches'].map((cat) => (
-            <button key={cat} className="px-4 py-2 rounded-full bg-zinc-100 dark:bg-zinc-800 text-sm font-medium hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:text-indigo-600 transition-colors">
-              {cat}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div 
+      className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col"
+      style={{ '--theme-color': themeColor } as React.CSSProperties}
+    >
+      <PublicHeader cafe={cafe} />
 
-      {/* Menu Items */}
-      <main className="p-4 flex-1">
-        <div className="space-y-6">
-          <section>
-            <h2 className="text-xl font-semibold mb-4 text-zinc-900 dark:text-white">Coffee</h2>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-4 bg-white dark:bg-zinc-900 p-4 rounded-2xl shadow-sm border border-zinc-100 dark:border-zinc-800">
-                  <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-800 rounded-xl flex-shrink-0"></div>
-                  <div className="flex-1">
-                    <h3 className="font-medium text-zinc-900 dark:text-white">Espresso</h3>
-                    <p className="text-sm text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2">Rich and bold double shot of our house blend.</p>
-                    <div className="mt-2 font-semibold text-indigo-600 dark:text-indigo-400">$3.50</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </section>
+      {categoriesWithItems.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center mt-12">
+          <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+            <Coffee className="w-8 h-8 text-zinc-400" />
+          </div>
+          <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Menu Coming Soon</h2>
+          <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
+            {cafe.name} is still setting up their menu. Please check back later!
+          </p>
         </div>
-      </main>
+      ) : (
+        <>
+          <PublicCategoryNav categories={categoriesWithItems} />
+
+          <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-16 sm:space-y-20 pb-32">
+            {categoriesWithItems.map((category) => (
+              <section 
+                key={category.id} 
+                id={category.id}
+                className="scroll-mt-40" // Offset for sticky nav + spacing
+              >
+                <div className="flex items-center gap-4 mb-6 sm:mb-8">
+                  <h2 className="text-2xl sm:text-3xl font-extrabold text-zinc-900 dark:text-white tracking-tight">
+                    {category.name}
+                  </h2>
+                  <div className="flex-1 h-px bg-zinc-200 dark:bg-zinc-800/60 mt-1"></div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                  {category.items.map((item) => (
+                    <PublicMenuItemCard key={item.id} item={item} />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </main>
+        </>
+      )}
+      
+      {/* Footer Branding */}
+      <footer className="py-8 text-center text-zinc-400 dark:text-zinc-600 text-sm mt-auto">
+        Powered by <strong>CafeSaaS</strong>
+      </footer>
     </div>
   )
 }

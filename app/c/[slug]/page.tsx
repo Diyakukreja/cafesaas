@@ -7,9 +7,8 @@ import { Metadata } from 'next'
 
 import { PublicHeader } from '@/components/public-menu/public-header'
 import { PublicMenuList } from '@/components/public-menu/public-menu-list'
-import { AmbientBackground } from '@/components/ui/ambient-background'
 import { FadeIn } from '@/components/ui/motion'
-import { Coffee } from 'lucide-react'
+import { Utensils } from 'lucide-react'
 
 export async function generateMetadata({
   params,
@@ -67,39 +66,38 @@ export default async function PublicCafePage({
 
   return (
     <div 
-      className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col relative z-0"
+      className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col"
       style={{ '--theme-color': themeColor } as React.CSSProperties}
     >
-      {/* NUCLEAR DEBUG: Disable Background */}
-      {/* <AmbientBackground /> */}
+      {/* 
+        STABILITY-FIRST: Removed AmbientBackground entirely to prevent 
+        mobile rendering regressions caused by fixed/blur overlays.
+      */}
       
       <PublicHeader cafe={cafe} />
 
       {categoriesWithItems.length === 0 ? (
-        <FadeIn className="flex-1 flex flex-col items-center justify-center p-8 text-center mt-12 z-10 relative">
-          <div className="w-24 h-24 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-xl rounded-full flex items-center justify-center mb-6 shadow-2xl border border-white/20">
-            <Coffee className="w-10 h-10 text-zinc-400" />
+        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center mt-12">
+          <div className="w-20 h-20 bg-white dark:bg-zinc-900 rounded-full flex items-center justify-center mb-6 shadow-sm border border-zinc-100 dark:border-zinc-800">
+            <Utensils className="w-8 h-8 text-zinc-300 dark:text-zinc-600" />
           </div>
-          <h2 className="text-2xl font-black text-zinc-900 dark:text-white mb-2 uppercase tracking-tighter">Menu Coming Soon</h2>
+          <h2 className="text-2xl font-black text-zinc-900 dark:text-white mb-2 uppercase tracking-tighter italic">Menu Coming Soon</h2>
           <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto font-medium">
-            Our chefs are preparing something special. Stay tuned!
+            Our chefs are perfecting the recipes. Check back shortly!
           </p>
-        </FadeIn>
-      ) : (
-        <div className="relative z-[50] flex-1 flex flex-col">
-          <PublicMenuList categoriesWithItems={categoriesWithItems} />
         </div>
+      ) : (
+        <main className="flex-1">
+          <PublicMenuList categoriesWithItems={categoriesWithItems} />
+        </main>
       )}
       
       {/* Premium Footer Branding */}
-      <footer className="relative z-10 py-12 text-center text-zinc-400 dark:text-zinc-600 text-xs mt-auto">
-        <div className="mb-4 opacity-30">
-          <div className="h-px w-24 bg-current mx-auto mb-4" />
-        </div>
-        <p className="font-bold tracking-widest uppercase">
+      <footer className="py-16 text-center text-zinc-400 dark:text-zinc-600 text-[10px] mt-auto border-t border-zinc-100 dark:border-zinc-900/50">
+        <p className="font-black tracking-[0.3em] uppercase mb-1">
           Powered by <span className="text-zinc-900 dark:text-white">CafeSaaS</span>
         </p>
-        <p className="mt-1 opacity-60">Digital Operating System for Modern Cafes</p>
+        <p className="opacity-60 font-bold uppercase tracking-widest">Digital Hospitality Operating System</p>
       </footer>
     </div>
   )

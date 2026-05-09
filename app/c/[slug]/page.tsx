@@ -8,6 +8,8 @@ import { Metadata } from 'next'
 import { PublicHeader } from '@/components/public-menu/public-header'
 import { PublicCategoryNav } from '@/components/public-menu/public-category-nav'
 import { PublicMenuItemCard } from '@/components/public-menu/public-menu-item-card'
+import { AmbientBackground } from '@/components/ui/ambient-background'
+import { StaggerContainer, StaggerItem, FadeIn } from '@/components/ui/motion'
 import { Coffee } from 'lucide-react'
 
 // Generate Dynamic Metadata for SEO
@@ -73,28 +75,33 @@ export default async function PublicCafePage({
 
   return (
     <div 
-      className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col"
+      className="min-h-screen bg-zinc-50 dark:bg-zinc-950 flex flex-col relative z-0"
       style={{ '--theme-color': themeColor } as React.CSSProperties}
     >
+      <AmbientBackground />
       <PublicHeader cafe={cafe} />
 
       {categoriesWithItems.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center p-8 text-center mt-12">
-          <div className="w-20 h-20 bg-zinc-100 dark:bg-zinc-900 rounded-full flex items-center justify-center mb-4">
+        <FadeIn className="flex-1 flex flex-col items-center justify-center p-8 text-center mt-12 z-10 relative">
+          <div className="w-20 h-20 bg-white/50 dark:bg-zinc-900/50 backdrop-blur-md rounded-full flex items-center justify-center mb-4 shadow-sm border border-zinc-200/50 dark:border-zinc-800/50">
             <Coffee className="w-8 h-8 text-zinc-400" />
           </div>
           <h2 className="text-xl font-bold text-zinc-900 dark:text-white mb-2">Menu Coming Soon</h2>
           <p className="text-zinc-500 dark:text-zinc-400 max-w-sm mx-auto">
             {cafe.name} is still setting up their menu. Please check back later!
           </p>
-        </div>
+        </FadeIn>
       ) : (
-        <>
+        <div className="relative z-10 flex-1 flex flex-col">
           <PublicCategoryNav categories={categoriesWithItems} />
 
-          <main className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-16 sm:space-y-20 pb-32">
+          <StaggerContainer 
+            delayChildren={0.3} 
+            staggerChildren={0.1}
+            className="flex-1 w-full max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-16 sm:space-y-20 pb-32"
+          >
             {categoriesWithItems.map((category) => (
-              <section 
+              <StaggerItem 
                 key={category.id} 
                 id={category.id}
                 className="scroll-mt-40" // Offset for sticky nav + spacing
@@ -111,15 +118,15 @@ export default async function PublicCafePage({
                     <PublicMenuItemCard key={item.id} item={item} />
                   ))}
                 </div>
-              </section>
+              </StaggerItem>
             ))}
-          </main>
-        </>
+          </StaggerContainer>
+        </div>
       )}
       
       {/* Footer Branding */}
-      <footer className="py-8 text-center text-zinc-400 dark:text-zinc-600 text-sm mt-auto">
-        Powered by <strong>CafeSaaS</strong>
+      <footer className="relative z-10 py-8 text-center text-zinc-400 dark:text-zinc-600 text-sm mt-auto font-medium">
+        Powered by <strong className="text-zinc-900 dark:text-white">CafeSaaS</strong>
       </footer>
     </div>
   )

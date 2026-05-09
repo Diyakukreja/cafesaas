@@ -1,6 +1,7 @@
 'use client'
 
 import { Cafe } from '@/types'
+import { FadeIn } from '@/components/ui/motion'
 import { MapPin, Clock } from 'lucide-react'
 
 export function PublicHeader({ cafe }: { cafe: Cafe }) {
@@ -31,9 +32,7 @@ export function PublicHeader({ cafe }: { cafe: Cafe }) {
       {/* Content */}
       <div className="max-w-4xl mx-auto px-5 sm:px-8 relative -mt-20 sm:-mt-24 pb-10 flex flex-col items-center text-center">
         {/* Premium Avatar Profile */}
-        <div 
-          className="w-28 h-28 sm:w-36 sm:h-36 bg-white dark:bg-zinc-900 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] flex items-center justify-center overflow-hidden mb-6 border-4 border-white dark:border-zinc-950 ring-1 ring-zinc-100 dark:ring-zinc-800"
-        >
+        <FadeIn y={30} className="w-28 h-28 sm:w-36 sm:h-36 bg-white dark:bg-zinc-900 rounded-full shadow-[0_8px_30px_rgb(0,0,0,0.12)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.4)] flex items-center justify-center overflow-hidden mb-6 border-4 border-white dark:border-zinc-950 ring-1 ring-zinc-100 dark:ring-zinc-800">
           {cafe.logo_url ? (
             <img 
               src={cafe.logo_url} 
@@ -50,17 +49,21 @@ export function PublicHeader({ cafe }: { cafe: Cafe }) {
               {cafe.name.charAt(0).toUpperCase()}
             </span>
           )}
-        </div>
+        </FadeIn>
         
         {/* Cafe Identity */}
-        <h1 className="text-3xl sm:text-5xl font-extrabold text-zinc-900 dark:text-white mb-3 tracking-tight">
-          {cafe.name}
-        </h1>
+        <FadeIn delay={0.1} y={20}>
+          <h1 className="text-3xl sm:text-5xl font-extrabold text-zinc-900 dark:text-white mb-3 tracking-tight">
+            {cafe.name}
+          </h1>
+        </FadeIn>
         
         {cafe.description && (
-          <p className="text-zinc-500 dark:text-zinc-400 max-w-xl text-base sm:text-lg leading-relaxed mb-6 font-medium">
-            {cafe.description}
-          </p>
+          <FadeIn delay={0.2} y={15}>
+            <p className="text-zinc-500 dark:text-zinc-400 max-w-xl text-base sm:text-lg leading-relaxed mb-6 font-medium">
+              {cafe.description}
+            </p>
+          </FadeIn>
         )}
 
         {/* Optional Metadata pills (Location/Hours) - Future expansion, just skeleton for visual weight */}

@@ -3,13 +3,15 @@
 import { MenuItem } from '@/types'
 import { Clock, Image as ImageIcon } from 'lucide-react'
 
+import { HoverCard } from '@/components/ui/motion'
+
 export function PublicMenuItemCard({ item }: { item: MenuItem }) {
   const isSoldOut = !item.is_available
 
   return (
-    <div 
-      className={`group flex bg-white dark:bg-zinc-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-md border border-zinc-100 dark:border-zinc-800 transition-all duration-300 ${
-        isSoldOut ? 'opacity-60 grayscale-[0.3]' : ''
+    <HoverCard 
+      className={`group flex bg-white/60 dark:bg-zinc-900/60 backdrop-blur-md rounded-[24px] overflow-hidden shadow-[0_2px_10px_rgb(0,0,0,0.02)] border border-zinc-200/60 dark:border-zinc-800/60 transition-colors duration-300 ${
+        isSoldOut ? 'opacity-60 grayscale-[0.3]' : 'hover:bg-white dark:hover:bg-zinc-900 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)]'
       }`}
     >
       {/* Food-First Image Section */}
@@ -88,6 +90,6 @@ export function PublicMenuItemCard({ item }: { item: MenuItem }) {
           )}
         </div>
       </div>
-    </div>
+    </HoverCard>
   )
 }

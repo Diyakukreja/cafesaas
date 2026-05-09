@@ -3,6 +3,8 @@ import { cafeService } from '@/services/cafe-service'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { QrCode, Utensils, LayoutTemplate, Settings, ExternalLink, Activity } from 'lucide-react'
+import { AmbientBackground } from '@/components/ui/ambient-background'
+import { StaggerContainer, StaggerItem } from '@/components/ui/motion'
 
 export default async function CafeDashboardPage({
   params,
@@ -30,7 +32,7 @@ export default async function CafeDashboardPage({
       title: 'QR Code & Print',
       description: 'Download table placards',
       icon: <QrCode className="w-5 h-5" />,
-      href: '#', // TODO: Implement QR generator
+      href: `/dashboard/${cafeId}/qr`,
       primary: false,
     },
     {
@@ -43,9 +45,12 @@ export default async function CafeDashboardPage({
   ]
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="max-w-5xl mx-auto space-y-8 relative z-0" style={{ '--theme-color': cafe.theme_color || '#4f46e5' } as React.CSSProperties}>
+      <AmbientBackground />
+      
       {/* Premium Header */}
-      <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-sm">
+      <StaggerContainer delayChildren={0.1} staggerChildren={0.1} className="relative z-10 space-y-8">
+        <StaggerItem className="bg-white/60 dark:bg-zinc-950/60 backdrop-blur-xl border border-zinc-200/50 dark:border-zinc-800/50 rounded-[28px] p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
         <div className="flex items-center gap-5">
           <div 
             className="w-16 h-16 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shadow-inner"
@@ -74,10 +79,10 @@ export default async function CafeDashboardPage({
             View Public Menu
           </Link>
         </div>
-      </div>
+        </StaggerItem>
 
-      {/* Operational Dashboard */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Operational Dashboard */}
+        <StaggerItem className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Main Workspace Actions */}
         <div className="md:col-span-2 space-y-6">
@@ -153,8 +158,9 @@ export default async function CafeDashboardPage({
             </ul>
           </div>
         </div>
+        </StaggerItem>
 
-      </div>
+      </StaggerContainer>
     </div>
   )
 }

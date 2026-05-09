@@ -2,7 +2,11 @@ import { createClient } from '@/lib/supabase/client'
 import { LoginInput, RegisterInput } from '@/validations/auth.schema'
 
 class AuthService {
-  private supabase = createClient()
+  // Use a getter to ensure the client is only initialized when needed.
+  // This prevents module-level initialization errors during static site generation.
+  private get supabase() {
+    return createClient()
+  }
 
   async login(data: LoginInput) {
     const { data: authData, error } = await this.supabase.auth.signInWithPassword({
